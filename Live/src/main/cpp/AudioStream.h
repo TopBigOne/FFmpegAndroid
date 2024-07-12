@@ -2,9 +2,11 @@
 #ifndef AUDIOSTREAM_H
 #define AUDIOSTREAM_H
 
+#include "rtmp/log.h"
 #include "rtmp/rtmp.h"
 #include "faac/faac.h"
 #include <sys/types.h>
+#include "LogUtil.h"
 
 class AudioStream {
     typedef void (*AudioCallback)(RTMPPacket *packet);

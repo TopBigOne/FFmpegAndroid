@@ -4,8 +4,7 @@
 
 #include <android/log.h>
 
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,"FrankLive",__VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,"FrankLive",__VA_ARGS__)
+#include "LogUtil.h"
 
 /***************relative to Java**************/
 //error code for opening video encoder

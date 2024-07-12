@@ -39,10 +39,10 @@ extern "C" {
 #pragma pack(push, 1)
 
 typedef struct {
-  void *ptr;
-  char *name;
+    void *ptr;
+    char *name;
 }
-psymodellist_t;
+        psymodellist_t;
 
 #include "faaccfg.h"
 
@@ -60,34 +60,66 @@ typedef signed int int32_t;
 	Returns FAAC_CFG_VERSION.
 */
 int FAACAPI faacEncGetVersion(char **faac_id_string,
-			      char **faac_copyright_string);
+                              char **faac_copyright_string);
 
 
-faacEncConfigurationPtr FAACAPI
-  faacEncGetCurrentConfiguration(faacEncHandle hEncoder);
+faacEncConfigurationPtr FAACAPI faacEncGetCurrentConfiguration(faacEncHandle hEncoder);
 
 
-int FAACAPI faacEncSetConfiguration(faacEncHandle hEncoder,
-				    faacEncConfigurationPtr config);
+/**
+ * FAAC编码器的配置参数
+ * @param hEncoder
+ * @param config  编码器配置参数
+ * @return
+ */
+int FAACAPI faacEncSetConfiguration(faacEncHandle hEncoder, faacEncConfigurationPtr config);
 
 
+/**
+ * 初始化FAAC编码器，并返回一个编码器句柄
+ * @param sampleRate
+ * @param numChannels
+ * @param inputSamples
+ * @param maxOutputBytes
+ * @return
+ */
 faacEncHandle FAACAPI faacEncOpen(unsigned long sampleRate,
-				  unsigned int numChannels,
-				  unsigned long *inputSamples,
-				  unsigned long *maxOutputBytes);
+                                  unsigned int numChannels,
+                                  unsigned long *inputSamples,
+                                  unsigned long *maxOutputBytes);
 
 
+/**
+ * 获取 AAC 编码器参数中 decoder specific info
+ * @param hEncoder
+ * @param ppBuffer   ppBuffer 是指针的指针，用于存储 decoder specific info
+ * @param pSizeOfDecoderSpecificInfo  ，pSizeOfDecoderSpecificInfo 用于存储 decoder specific info 的长度
+ * @return   函数返回解码器特定信息的长度
+ */
 int FAACAPI faacEncGetDecoderSpecificInfo(faacEncHandle hEncoder, unsigned char **ppBuffer,
-					  unsigned long *pSizeOfDecoderSpecificInfo);
+                                          unsigned long *pSizeOfDecoderSpecificInfo);
 
 
-int FAACAPI faacEncEncode(faacEncHandle hEncoder, int32_t * inputBuffer, unsigned int samplesInput,
-			 unsigned char *outputBuffer,
-			 unsigned int bufferSize);
+/**
+ * 将PCM音频数据编码为AAC格式的音频数据
+ * @param hEncoder      编码器句柄
+ * @param inputBuffer   输入PCM音频数据的缓冲区指针
+ * @param samplesInput  输入PCM音频数据的样本数
+ * @param outputBuffer  输出AAC格式音频数据的缓冲区指针
+ * @param bufferSize    输出AAC格式音频数据的缓冲区大小
+ * @return     编码后的字节数，如果返回0表示编码失败。
+ */
+int FAACAPI faacEncEncode(faacEncHandle hEncoder, int32_t *inputBuffer, unsigned int samplesInput,
+                          unsigned char *outputBuffer,
+                          unsigned int bufferSize);
 
 
+/**
+ * 关闭FAAC编码器
+ * @param hEncoder  编码器句柄
+ * @return
+ */
 int FAACAPI faacEncClose(faacEncHandle hEncoder);
-
 
 
 #pragma pack(pop)

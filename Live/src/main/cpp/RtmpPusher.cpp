@@ -1,26 +1,49 @@
 #include <jni.h>
 #include <string>
-#include "PacketQueue.h"
+#include "safe_queue.h"
 #include "PushInterface.h"
 #include "VideoStream.h"
 #include "AudioStream.h"
+
+
 
 #define RTMP_PUSHER_FUNC(RETURN_TYPE, FUNC_NAME, ...) \
     extern "C" \
     JNIEXPORT RETURN_TYPE JNICALL Java_com_frank_live_LivePusherNew_ ## FUNC_NAME \
     (JNIEnv *env, jobject instance, ##__VA_ARGS__)\
 
-PacketQueue<RTMPPacket *> packets;
+SafeQueue<RTMPPacket *> packets;
 VideoStream *videoStream = nullptr;
-AudioStream *audioStream = nullptr;
+int isStart = 0;
+pthread_t pid;
 
-std::atomic<bool> isPushing;
+int readyPushing = 0;
 uint32_t start_time;
+
+AudioStream *audioStream = nullptr;
 
 //use to get thread's JNIEnv
 JavaVM *javaVM;
 //callback object
 jobject jobject_error;
+
+/***************relative to Java**************/
+//error code for opening video encoder
+const int ERROR_VIDEO_ENCODER_OPEN = 0x01;
+//error code for video encoding
+const int ERROR_VIDEO_ENCODE = 0x02;
+//error code for opening audio encoder
+const int ERROR_AUDIO_ENCODER_OPEN = 0x03;
+//error code for audio encoding
+const int ERROR_AUDIO_ENCODE = 0x04;
+//error code for RTMP connecting
+const int ERROR_RTMP_CONNECT = 0x05;
+//error code for connecting stream
+const int ERROR_RTMP_CONNECT_STREAM = 0x06;
+//error code for sending packet
+const int ERROR_RTMP_SEND_PACKET = 0x07;
+
+/***************relative to Java**************/
 
 //when calling System.loadLibrary, will callback it
 jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
@@ -46,6 +69,7 @@ void callback(RTMPPacket *packet) {
 }
 
 void releasePackets(RTMPPacket *&packet) {
+    LOGD(__FUNCTION__)
     if (packet) {
         RTMPPacket_Free(packet);
         delete packet;
@@ -54,8 +78,9 @@ void releasePackets(RTMPPacket *&packet) {
 }
 
 void *start(void *args) {
+    LOGD(__FUNCTION__)
     char *url = static_cast<char *>(args);
-    RTMP *rtmp;
+    RTMP *rtmp = nullptr;
     do {
         rtmp = RTMP_Alloc();
         if (!rtmp) {
@@ -86,13 +111,13 @@ void *start(void *args) {
         //start time
         start_time = RTMP_GetTime();
         //start pushing
-        isPushing = true;
-        packets.setRunning(true);
+        readyPushing = 1;
+        packets.setWork(1);
         callback(audioStream->getAudioTag());
         RTMPPacket *packet = nullptr;
-        while (isPushing) {
+        while (readyPushing) {
             packets.pop(packet);
-            if (!isPushing) {
+            if (!readyPushing) {
                 break;
             }
             if (!packet) {
@@ -110,8 +135,9 @@ void *start(void *args) {
         }
         releasePackets(packet);
     } while (0);
-    isPushing = false;
-    packets.setRunning(false);
+    isStart = 0;
+    readyPushing = 0;
+    packets.setWork(0);
     packets.clear();
     if (rtmp) {
         RTMP_Close(rtmp);
@@ -122,10 +148,10 @@ void *start(void *args) {
 }
 
 RTMP_PUSHER_FUNC(void, native_1init) {
-    LOGI("native init...");
-    videoStream = new VideoStream();
+    LOGD(__FUNCTION__)
+    videoStream = new VideoStream;
     videoStream->setVideoCallback(callback);
-    audioStream = new AudioStream();
+    audioStream = new AudioStream;
     audioStream->setAudioCallback(callback);
     packets.setReleaseCallback(releasePackets);
     jobject_error = env->NewGlobalRef(instance);
@@ -134,29 +160,25 @@ RTMP_PUSHER_FUNC(void, native_1init) {
 RTMP_PUSHER_FUNC(void, native_1setVideoCodecInfo,
                  jint width, jint height, jint fps, jint bitrate) {
     if (videoStream) {
-        int ret = videoStream->setVideoEncInfo(width, height, fps, bitrate);
-        if (ret < 0) {
-            throwErrToJava(ERROR_VIDEO_ENCODER_OPEN);
-        }
+        videoStream->setVideoEncInfo(width, height, fps, bitrate);
     }
 }
 
 RTMP_PUSHER_FUNC(void, native_1start, jstring path_) {
-    LOGI("native start...");
-    if (isPushing) {
+    LOGD(__FUNCTION__)
+    if (isStart) {
         return;
     }
+    isStart = 1;
     const char *path = env->GetStringUTFChars(path_, nullptr);
     char *url = new char[strlen(path) + 1];
     strcpy(url, path);
-
-    std::thread pushThread(start, url);
-    pushThread.detach();
+    pthread_create(&pid, nullptr, start, url);
     env->ReleaseStringUTFChars(path_, path);
 }
 
 RTMP_PUSHER_FUNC(void, native_1pushVideo, jbyteArray yuv, jint camera_type) {
-    if (!videoStream || !isPushing) {
+    if (!videoStream || !readyPushing) {
         return;
     }
     jbyte *yuv_plane = env->GetByteArrayElements(yuv, JNI_FALSE);
@@ -166,10 +188,7 @@ RTMP_PUSHER_FUNC(void, native_1pushVideo, jbyteArray yuv, jint camera_type) {
 
 RTMP_PUSHER_FUNC(void, native_1setAudioCodecInfo, jint sampleRateInHz, jint channels) {
     if (audioStream) {
-        int ret = audioStream->setAudioEncInfo(sampleRateInHz, channels);
-        if (ret < 0) {
-            throwErrToJava(ERROR_AUDIO_ENCODER_OPEN);
-        }
+        audioStream->setAudioEncInfo(sampleRateInHz, channels);
     }
 }
 
@@ -181,7 +200,7 @@ RTMP_PUSHER_FUNC(jint, native_1getInputSamples) {
 }
 
 RTMP_PUSHER_FUNC(void, native_1pushAudio, jbyteArray data_) {
-    if (!audioStream || !isPushing) {
+    if (!audioStream || !readyPushing) {
         return;
     }
     jbyte *data = env->GetByteArrayElements(data_, nullptr);
@@ -191,15 +210,14 @@ RTMP_PUSHER_FUNC(void, native_1pushAudio, jbyteArray data_) {
 
 RTMP_PUSHER_FUNC(void, native_1stop) {
     LOGI("native stop...");
-    isPushing = false;
-    packets.setRunning(false);
+    readyPushing = 0;
+    packets.setWork(0);
+    pthread_join(pid, nullptr);
 }
 
 RTMP_PUSHER_FUNC(void, native_1release) {
     LOGI("native release...");
     env->DeleteGlobalRef(jobject_error);
-    delete videoStream;
-    videoStream = nullptr;
-    delete audioStream;
-    audioStream = nullptr;
+    DELETE(videoStream);
+    DELETE(audioStream);
 }
