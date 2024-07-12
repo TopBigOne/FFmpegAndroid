@@ -35,6 +35,7 @@ include_directories(src/main/cpp/include)
 add_library(live
         SHARED
         src/main/cpp/AudioStream.cpp
+        src/main/cpp/LogUtil.h
         src/main/cpp/VideoStream.cpp
         src/main/cpp/RtmpPusher.cpp)
 
