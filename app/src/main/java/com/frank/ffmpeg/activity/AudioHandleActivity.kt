@@ -36,6 +36,7 @@ import java.lang.StringBuilder
 /**
  * Using ffmpeg command to handle audio
  * Created by frank on 2018/1/23.
+ *  音频处理
  */
 
 class AudioHandleActivity : BaseActivity() {
@@ -44,6 +45,7 @@ class AudioHandleActivity : BaseActivity() {
     private var layoutAudioHandle: RecyclerView? = null
     private var layoutProgress: LinearLayout? = null
     private var txtProgress: TextView? = null
+    // 音频处理类型
     private var currentPosition: Int = 0
     private var ffmpegHandler: FFmpegHandler? = null
 
@@ -76,6 +78,7 @@ class AudioHandleActivity : BaseActivity() {
                     }
                     if (!outputPath.isNullOrEmpty() && !this@AudioHandleActivity.isDestroyed) {
                         showToast("Save to:$outputPath")
+                        Log.d(TAG, "handleMessage: Save :${outputPath}")
                         outputPath = ""
                     }
                     // reset progress
@@ -113,6 +116,7 @@ class AudioHandleActivity : BaseActivity() {
         }
     }
 
+
     private fun initView() {
         layoutProgress = getView(R.id.layout_progress)
         txtProgress = getView(R.id.txt_progress)
@@ -144,6 +148,7 @@ class AudioHandleActivity : BaseActivity() {
         adapter.setOnItemClickListener(object : OnItemClickListener {
             override fun onItemClick(position: Int) {
                 currentPosition = position
+                Log.i(TAG, "onItemClick:  选择：${list[position]}")
                 selectFile()
             }
         })
@@ -151,10 +156,12 @@ class AudioHandleActivity : BaseActivity() {
     }
 
     override fun onViewClick(view: View) {
+        Log.i(TAG, "onViewClick: ")
 
     }
 
     override fun onSelectedFile(filePath: String) {
+        Log.d(TAG, "onSelectedFile: ")
         doHandleAudio(filePath)
     }
 
@@ -164,20 +171,38 @@ class AudioHandleActivity : BaseActivity() {
      * @param srcFile srcFile
      */
     private fun doHandleAudio(srcFile: String) {
+
         var commandLine: Array<String>? = null
         if (!FileUtil.checkFileExist(srcFile)) {
             return
         }
+        val list = listOf(
+            getString(R.string.audio_transform),
+            getString(R.string.audio_cut),
+            getString(R.string.audio_concat),
+            getString(R.string.audio_mix),
+            getString(R.string.audio_play),
+            getString(R.string.audio_speed),
+            getString(R.string.audio_echo),
+            getString(R.string.audio_tremolo),
+            getString(R.string.audio_denoise),
+            getString(R.string.audio_add_equalizer),
+            getString(R.string.audio_silence),
+            getString(R.string.audio_volume),
+            getString(R.string.audio_waveform),
+            getString(R.string.audio_encode))
         if (!FileUtil.isAudio(srcFile)) {
             showToast(getString(R.string.wrong_audio_format))
             return
         }
+        Log.d(TAG, "doHandleAudio: ${currentPosition} : ${list[currentPosition]}")
         when (currentPosition) {
             0 -> if (useFFmpeg) { //use FFmpeg to transform
-                outputPath = PATH + File.separator + "transformAudio.mp3"
+                outputPath = PATH + File.separator + "aavideo/transformAudio.mp3"
                 commandLine = FFmpegUtil.transformAudio(srcFile, outputPath)
             } else { //use MediaCodec and libmp3lame to transform
                 Thread {
+                    Log.d(TAG, "doHandleAudio:  在子线处理")
                     outputPath = PATH + File.separator + "transformAudio.mp3"
                     try {
                         mHandler.obtainMessage(MSG_BEGIN).sendToTarget()
@@ -306,6 +331,7 @@ class AudioHandleActivity : BaseActivity() {
         if (ffmpegHandler == null || selectedPath.isEmpty() || appendFile.isEmpty()) {
             return
         }
+        Log.i(TAG, "concatAudio: ")
         isJointing = true
         val targetPath = PATH + File.separator + "concatAudio.mp3"
         val transformCmd1 = FFmpegUtil.transformAudio(selectedPath, "libmp3lame", outputPath1)
@@ -327,6 +353,7 @@ class AudioHandleActivity : BaseActivity() {
     }
 
     companion object {
+        private const val TAG = "AudioHandleActivity : "
 
         private var PATH = Environment.getExternalStorageDirectory().path
 

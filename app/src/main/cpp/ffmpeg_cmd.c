@@ -2,12 +2,14 @@
 #include "ffmpeg/ffmpeg.h"
 #include "ffmpeg_jni_define.h"
 
-#define FFMPEG_TAG "FFmpegCmd"
-#define INPUT_SIZE (8 * 1024)
+#define FFMPEG_TAG "FFmpegCmdNative"
+#define INPUT_SIZE (4 * 1024)
 
-#define ALOGI(TAG, FORMAT, ...) __android_log_vprint(ANDROID_LOG_INFO, TAG, FORMAT, ##__VA_ARGS__)
-#define ALOGE(TAG, FORMAT, ...) __android_log_vprint(ANDROID_LOG_ERROR, TAG, FORMAT, ##__VA_ARGS__)
-
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR,"rtmp",__VA_ARGS__)
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO,FFMPEG_TAG,__VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG,FFMPEG_TAG,__VA_ARGS__)
+#define ALOGI(TAG, FORMAT, ...) __android_log_vprint(ANDROID_LOG_INFO, TAG, FORMAT, ##__VA_ARGS__);
+#define ALOGE(TAG, FORMAT, ...) __android_log_vprint(ANDROID_LOG_ERROR, TAG, FORMAT, ##__VA_ARGS__);
 
 int err_count;
 JNIEnv *ff_env;
@@ -26,13 +28,16 @@ void init(JNIEnv *env) {
 }
 
 FFMPEG_FUNC(jint, handle, jobjectArray commands) {
+    LOGD(__func__ );
     init(env);
     // set the level of log
     av_log_set_level(AV_LOG_INFO);
     // set the callback of log, and redirect to print android log
+    // 在android的logcat直接输出数据
     av_log_set_callback(log_callback);
 
     int argc = (*env)->GetArrayLength(env, commands);
+    LOGI("  argc length:%d",argc);
     char **argv = (char **) malloc(argc * sizeof(char *));
     int i;
     int result;
@@ -59,17 +64,23 @@ FFMPEG_FUNC(void, cancelTaskJni, jint cancel) {
 
 void msg_callback(const char *format, va_list args, int level) {
     if (ff_env && msg_method) {
+        LOGD(__func__);
         char *ff_msg = (char *) malloc(sizeof(char) * INPUT_SIZE);
-        if (!ff_msg)
-            return;
         vsprintf(ff_msg, format, args);
         jstring jstr = (*ff_env)->NewStringUTF(ff_env, ff_msg);
-        if (jstr)
-            (*ff_env)->CallStaticVoidMethod(ff_env, ff_class, msg_method, jstr, level);
+        LOGI("  ff_msg %s : ",ff_msg);
+        (*ff_env)->CallStaticVoidMethod(ff_env, ff_class, msg_method, jstr, level);
         free(ff_msg);
     }
 }
 
+/**
+ *
+ * @param ptr
+ * @param level
+ * @param format
+ * @param args
+ */
 void log_callback(void *ptr, int level, const char *format, va_list args) {
     switch (level) {
         case AV_LOG_INFO:

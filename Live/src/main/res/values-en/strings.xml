@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">live</string>
-    <string name="swap">swap</string>
+    <string name="swap">swap camrea </string>
     <string name="start">start</string>
-    <string name="stop">stop</string>
+    <string name="stop">stop push </string>
     <string name="mute">mute</string>
     <string name="voice">voice</string>
     <string name="take_photo">photo</string>

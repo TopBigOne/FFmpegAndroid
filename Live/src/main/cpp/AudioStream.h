@@ -13,11 +13,11 @@ class AudioStream {
 
 private:
     AudioCallback audioCallback;
-    int m_channels;
-    faacEncHandle m_audioCodec = 0;
-    u_long m_inputSamples;
-    u_long m_maxOutputBytes;
-    u_char *m_buffer = 0;
+    int mChannels;
+    faacEncHandle audioCodec = 0;
+    u_long inputSamples;
+    u_long maxOutputBytes;
+    u_char *buffer = 0;
 
 public:
     AudioStream();

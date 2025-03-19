@@ -495,11 +495,11 @@ public class FFmpegUtil {
      * @return convert gif success or not
      */
     public static String[] generateGifByPalette(String inputPath, String palette, int startTime, int duration,
-                                           int frameRate, int width, String outputPath) {
+                                                int frameRate, int width, String outputPath) {
         String paletteGifCmd = "ffmpeg -ss %d -accurate_seek -t %d -i -i -lavfi fps=%d,scale=%d:-1:flags=lanczos[x];[x][1:v]" +
                 "paletteuse=dither=bayer:bayer_scale=3 -y";
         paletteGifCmd = String.format(Locale.getDefault(), paletteGifCmd, startTime,
-                                      duration, frameRate, width);
+                duration, frameRate, width);
         return insert(paletteGifCmd.split(" "), 7, inputPath, 9, palette, outputPath);
     }
 

@@ -85,11 +85,14 @@ public class CameraHelper implements SurfaceHolder.Callback, Camera.PreviewCallb
                 degrees = 270;
                 mOnChangedSizeListener.onChanged(mWidth, mHeight);
                 break;
+            default:
+                break;
         }
         int result;
         if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
             result = (info.orientation + degrees) % 360;
-            result = (360 - result) % 360; // compensate the mirror
+            // compensate the mirror
+            result = (360 - result) % 360;
         } else { // back-facing
             result = (info.orientation - degrees + 360) % 360;
         }

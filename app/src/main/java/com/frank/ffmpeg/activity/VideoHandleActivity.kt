@@ -41,6 +41,7 @@ import java.util.Locale
  */
 class VideoHandleActivity : BaseActivity() {
 
+
     private var layoutVideoHandle: RecyclerView? = null
     private var layoutProgress: LinearLayout? = null
     private var txtProgress: TextView? = null
@@ -136,7 +137,9 @@ class VideoHandleActivity : BaseActivity() {
                 getString(R.string.video_subtitle),
                 getString(R.string.video_rotate),
                 getString(R.string.video_gray),
-                getString(R.string.video_zoom))
+                getString(R.string.video_zoom),
+                getString(R.string.get_av_volume)
+        )
 
         layoutVideoHandle = findViewById(R.id.list_video_item)
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)

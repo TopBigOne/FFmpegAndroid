@@ -126,9 +126,49 @@ public class YUVUtil {
         }
     }
 
+
     public static void flipYUV(byte[] dst, byte[] src, int width, int height) {
-        if (dst == null || width <= 0 || height <= 0)
+        if (dst == null || width <= 0 || height <= 0){
             return;
+        }
+
+        int idx = 0;
+        // Y
+        for (int j = height - 1; j >= 0; j--) {
+            int rowStart = j * width;
+            for (int i = 0; i < width; i++) {
+                dst[idx++] = src[rowStart + width - 1 - i];
+            }
+        }
+        // U
+        int offset = width * height;
+        for (int j = height / 2 - 1; j >= 0; j--) {
+            int rowStart = j * width / 2;
+            for (int i = 0; i < width / 2; i++) {
+                dst[idx++] = src[offset + rowStart + width / 2 - 1 - i];
+            }
+        }
+        // V
+        offset += width * height / 4;
+        for (int j = height / 2 - 1; j >= 0; j--) {
+            int rowStart = j * width / 2;
+            for (int i = 0; i < width / 2; i++) {
+                dst[idx++] = src[offset + rowStart + width / 2 - 1 - i];
+            }
+        }
+    }
+
+    /**
+     * 老代码，会crash
+     * @param dst
+     * @param src
+     * @param width
+     * @param height
+     */
+    public static void flipYUV2(byte[] dst, byte[] src, int width, int height) {
+        if (dst == null || width <= 0 || height <= 0){
+            return;
+        }
 
         int idx = 0;
         // Y

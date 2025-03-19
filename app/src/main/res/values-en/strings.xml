@@ -1,6 +1,6 @@
 <resources>
 
-<!--    <string name="app_name">FFmpegAndroid</string>
+    <string name="app_name">FFmpegAndroid</string>
     <string name="audio_transform">Audio transform</string>
     <string name="audio_cut">Audio cut</string>
     <string name="audio_concat">Audio concat</string>
@@ -15,14 +15,11 @@
     <string name="audio_denoise">Audio denoise</string>
     <string name="audio_silence">Silence detect</string>
     <string name="audio_volume">Audio volume</string>
-    <string name="audio_reverb">Reverb</string>
-    <string name="audio_fade">Fade</string>
-    <string name="audio_surround">Surround</string>
     <string name="audio_add_equalizer">Add equalizer</string>
     <string name="audio_effect">Audio effect</string>
     <string name="audio_equalizer">Audio equalizer:</string>
     <string name="audio_style">Audio style:</string>
-    <string name="audio_effect_reverb">Audio reverb:</string>
+    <string name="audio_reverb">Audio reverb:</string>
     <string name="audio_bass_boost">Bass boost:</string>
     <string name="audio_voice_enhancer">Voice enhancer:</string>
     <string name="audio_effect_echo">Ethereal</string>
@@ -34,8 +31,8 @@
     <string name="audio_handle">Audio handle</string>
     <string name="media_handle">Media handle</string>
     <string name="video_handle">Video handle</string>
-    <string name="video_push">ffmpeg push</string>
-    <string name="video_live">RTMP living</string>
+    <string name="video_push">Video pusher</string>
+    <string name="video_live">Video living</string>
 
     <string name="media_mux">Media mux</string>
     <string name="media_extra_audio">Audio extract</string>
@@ -57,8 +54,7 @@
     <string name="video_extract_frame">Extract frame</string>
     <string name="video_part_zoom">Video zoom</string>
     <string name="video_play">Video play</string>
-    <string name="video_filter">FFmpeg filter</string>
-    <string name="camera_filter">Camera filter</string>
+    <string name="video_filter">Video filter</string>
     <string name="video_slow">Video slow</string>
     <string name="video_fast">Video fast</string>
     <string name="video_multi">Video multi</string>
@@ -75,9 +71,9 @@
     <string name="video_gray">Gray video</string>
     <string name="video_stereo3d">stereo 3d</string>
 
-    <string name="swap">Swap</string>
-    <string name="start">Start</string>
-    <string name="stop">Stop</string>
+    <string name="swap">Swap Camera</string>
+    <string name="start">Start Push </string>
+    <string name="stop">Stop Push</string>
     <string name="mute">Mute</string>
     <string name="sound">Sound</string>
     <string name="sound_on">Sound on</string>
@@ -106,30 +102,14 @@
     <string name="tip_not_mp4_video">It is not a mp4 file</string>
 
     <string name="filter_sketch">sketch</string>
-    <string name="filter_luminance">luma</string>
-    <string name="filter_saturation">saturation</string>
-    <string name="filter_contrast">contrast</string>
+    <string name="filter_distinct">distinct</string>
     <string name="filter_edge">edge</string>
     <string name="filter_division">division</string>
     <string name="filter_equalize">equalize</string>
+    <string name="filter_rectangle">rectangle</string>
     <string name="filter_flip">flip</string>
     <string name="filter_blur">blur</string>
     <string name="filter_rotate">rotate</string>
     <string name="filter_sharpening">sharpen</string>
-    <string name="filter_vr">VR</string>
-    <string name="filter_denoise">denoise</string>
-
-    <string name="camera_filter_none">None</string>
-    <string name="camera_filter_hue">Hue</string>
-    <string name="camera_filter_balance">White balance</string>
-    <string name="camera_filter_sketch">Sketch</string>
-    <string name="camera_filter_blur">Blur</string>
-    <string name="camera_filter_overlay">Overlay</string>
-    <string name="camera_filter_circle">Breath Circle</string>
-    <string name="camera_filter_brightness">Brightness</string>
-    <string name="camera_filter_saturation">Saturation</string>
-    <string name="camera_filter_contrast">Contrast</string>
-    <string name="camera_filter_sharpen">Sharpen</string>
-    -->
-
+    <string name="bit_stream_info">Bit Stream Info</string>
 </resources>

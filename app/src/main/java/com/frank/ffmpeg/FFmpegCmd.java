@@ -9,6 +9,7 @@ import com.frank.ffmpeg.util.ThreadPoolUtil;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Arrays;
 import java.util.List;
 
 import androidx.annotation.IntDef;
@@ -50,6 +51,7 @@ public class FFmpegCmd {
      * @param onHandleListener the callback for executing command
      */
     public static void execute(final String[] commands, final OnHandleListener onHandleListener) {
+        Log.i(TAG, "execute command : "+ Arrays.toString(commands));
         mProgressListener = onHandleListener;
         ThreadPoolUtil.INSTANCE.executeSingleThreadPool(new Runnable() {
             @Override

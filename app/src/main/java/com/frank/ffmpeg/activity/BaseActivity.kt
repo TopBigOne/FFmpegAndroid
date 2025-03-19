@@ -79,7 +79,7 @@ abstract class BaseActivity : AppCompatActivity(), View.OnClickListener {
         try {
             if (data != null && data.data != null) {
                 val filePath = ContentUtil.getPath(this, data.data!!)
-                Log.i(TAG, "filePath=" + filePath!!)
+                Log.i(BASE_TAG, "filePath=" + filePath!!)
                 onSelectedFile(filePath)
             }
         } catch (e : Exception) {
@@ -122,7 +122,7 @@ abstract class BaseActivity : AppCompatActivity(), View.OnClickListener {
 
     companion object {
 
-        private val TAG = BaseActivity::class.java.simpleName
+        private val BASE_TAG = BaseActivity::class.java.simpleName
 
         private const val REQUEST_CODE = 1234
         private val permissions = arrayOf(

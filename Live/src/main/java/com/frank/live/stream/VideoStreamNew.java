@@ -182,7 +182,7 @@ public class VideoStreamNew extends VideoStreamBase
         if (mCallback != null && mVideoParam != null) {
             int width = previewSize.getWidth();
             int height = previewSize.getHeight();
-            if (degree == 90 || degree == 270) {
+            if (degree == 90 || degree == 270) {// 交换 宽与高
                 int temp = width;
                 width = height;
                 height = temp;

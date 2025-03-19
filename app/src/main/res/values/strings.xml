@@ -73,12 +73,14 @@
     <string name="video_zoom">图片缩放</string>
     <string name="video_gray">黑白视频</string>
     <string name="video_stereo3d">3D视频</string>
+    <string name="get_av_volume">get av volume</string>
 
     <string name="swap">切换</string>
     <string name="start">开始</string>
     <string name="stop">停止</string>
     <string name="mute">静音</string>
     <string name="sound">声音</string>
+    <string name="bit_stream_info">码流信息</string>
     <string name="sound_on">声音开</string>
     <string name="sound_off">声音关</string>
 

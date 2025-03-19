@@ -10,7 +10,7 @@ void AudioStreamLogCallback(int level, const char *fmt, va_list args) {
     LOGD(__func__)
    // LOGI(fmt, args)
 
-    __android_log_vprint(ANDROID_LOG_INFO, "    RTMP_LOG2 : ", fmt, args);
+    __android_log_vprint(ANDROID_LOG_INFO, "    GY_RTMP : ", fmt, args);
 }
 
 
@@ -21,7 +21,7 @@ AudioStream::AudioStream() {
 }
 
 AudioStream::~AudioStream() {
-    DELETE(buffer);
+    delete buffer;
     if (audioCodec) {
         faacEncClose(audioCodec);
         audioCodec = nullptr;
@@ -32,7 +32,7 @@ void AudioStream::setAudioCallback(AudioCallback audioCallback) {
     this->audioCallback = audioCallback;
 }
 
-void AudioStream::setAudioEncInfo(int samplesInHZ, int channels) {
+int AudioStream::setAudioEncInfo(int samplesInHZ, int channels) {
     mChannels  = channels;
     //open faac encoder
     audioCodec = faacEncOpen(static_cast<unsigned long>(samplesInHZ),
@@ -40,19 +40,20 @@ void AudioStream::setAudioEncInfo(int samplesInHZ, int channels) {
                              &inputSamples,
                              &maxOutputBytes);
 
+    buffer = new u_char[maxOutputBytes];
+
     //set encoder params
     faacEncConfigurationPtr config = faacEncGetCurrentConfiguration(audioCodec);
     config->mpegVersion   = MPEG4;
     config->aacObjectType = LOW;
     config->inputFormat   = FAAC_INPUT_16BIT;
     config->outputFormat  = 0;
-    faacEncSetConfiguration(audioCodec, config);
+   return faacEncSetConfiguration(audioCodec, config);
 
-    //output buffer
-    buffer = new u_char[maxOutputBytes];
+
 }
 
-int AudioStream::getInputSamples() {
+int AudioStream::getInputSamples() const {
     return static_cast<int>(inputSamples);
 }
 

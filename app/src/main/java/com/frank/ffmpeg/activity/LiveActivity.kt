@@ -16,17 +16,16 @@ import android.view.View
 import android.widget.CompoundButton
 import android.widget.Toast
 import android.widget.ToggleButton
-
 import com.frank.ffmpeg.R
 import com.frank.ffmpeg.handler.ConnectionReceiver
 import com.frank.ffmpeg.handler.OrientationHandler
 import com.frank.ffmpeg.listener.OnNetworkChangeListener
+import com.frank.live.LivePusherNew
 import com.frank.live.camera.Camera2Helper
+import com.frank.live.camera.CameraType
 import com.frank.live.listener.LiveStateChangeListener
 import com.frank.live.param.AudioParam
 import com.frank.live.param.VideoParam
-import com.frank.live.LivePusherNew
-import com.frank.live.camera.CameraType
 
 /**
  * Realtime living with rtmp stream
@@ -173,7 +172,9 @@ open class LiveActivity : BaseActivity(), CompoundButton.OnCheckedChangeListener
     companion object {
 
         private val TAG = LiveActivity::class.java.simpleName
-        private const val LIVE_URL = "rtmp://192.168.17.168/live/stream"
+        // private const val LIVE_URL = "rtmp://192.168.31.28/live/stream"
+        // rtmp://127.0.0.1:2020/live
+        private const val LIVE_URL = "rtmp://192.168.1.3:2020/live"
         private const val MSG_ERROR = 100
     }
 }

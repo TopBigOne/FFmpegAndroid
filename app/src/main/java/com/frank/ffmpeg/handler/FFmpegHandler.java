@@ -10,6 +10,7 @@ import com.frank.ffmpeg.tool.JsonParseTool;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -36,8 +37,6 @@ public class FFmpegHandler {
 
     private boolean isContinue = false;
 
-    private long startTimestamp = 0;
-
     public FFmpegHandler(Handler mHandler) {
         this.mHandler = mHandler;
     }
@@ -55,13 +54,16 @@ public class FFmpegHandler {
         if (commandLine == null) {
             return;
         }
-
+        Log.i(TAG, "|executeFFmpegCmd: =======================================================================| ");
+        Log.d(TAG, "|executeFFmpegCmd  commandLine : "+ Arrays.toString(commandLine));
+        Log.i(TAG, "|executeFFmpegCmd: =======================================================================| ");
+        mHandler.removeMessages(MSG_PROGRESS);
+        mHandler.removeCallbacksAndMessages(null);
         FFmpegCmd.execute(commandLine, new OnHandleListener() {
             @Override
             public void onBegin() {
-                Log.i(TAG, "handle onBegin...");
+                Log.d(TAG, "FFmpegCmd handle onBegin");
                 mHandler.obtainMessage(MSG_BEGIN).sendToTarget();
-                startTimestamp = System.currentTimeMillis();
             }
 
             @Override
@@ -76,20 +78,11 @@ public class FFmpegHandler {
 
             @Override
             public void onEnd(int resultCode, String resultMsg) {
-                long time = System.currentTimeMillis() - startTimestamp;
-                long seconds = time / 1000;
-                long minute = seconds / 60;
-                long second = seconds % 60;
-                long millisecond = time % 1000;
-                if (minute > 0) {
-                    Log.i(TAG, "handle onEnd time=" + minute + ":" + second + "." + millisecond);
-                } else {
-                    Log.i(TAG, "handle onEnd time=" + second + "." + millisecond);
-                }
+
+                Log.d(TAG, "FFmpegCmd handle onEnd");
                 if (isContinue) {
                     mHandler.obtainMessage(MSG_CONTINUE).sendToTarget();
                 } else {
-                    mHandler.removeMessages(MSG_PROGRESS);
                     mHandler.obtainMessage(MSG_FINISH).sendToTarget();
                 }
             }

@@ -28,4 +28,17 @@ WebRTC设计传输协议有SDP、SRTP、ICE、NAT、STUN等，常用视频编码
 ### 音视频开源库:
 ![preview](https://github.com/xufuji456/FFmpegAndroid/blob/master/picture/multimedia_library.png)
 
-### 音视频教程: [一起学习音视频](https://ke.qq.com/course/5613182#term_id=105809583)
+### Joining the group to learn FFmpeg:
+![preview](https://github.com/xufuji456/FFmpegAndroid/blob/master/picture/ffmpeg_group.png)
+
+
+
+--
+
+rtmp://127.0.0.1:2020/live
+
+
+--
+* Android 推荐的 PreViewFormat 是 NV21，在 PreviewCallback 中会返回 Preview 的 N21 图片。如果是软编的话，由于 H264 支持 I420 的图片格式，因此需要将 N21格式转为 I420 格式，然后交给 x264 编码库。如果是硬编的话，
+* 由于 Android 硬编编码器支持 I420(COLOR_FormatYUV420Planar) 和NV12(COLOR_FormatYUV420SemiPlanar)，因此可以将 N21 的图片转为 I420 或者 NV12 ，然后交给硬编编码器。
+

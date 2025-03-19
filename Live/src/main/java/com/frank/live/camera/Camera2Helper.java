@@ -47,8 +47,9 @@ public class Camera2Helper {
 
     private static final String TAG = Camera2Helper.class.getSimpleName();
 
-    public static final String CAMERA_ID_FRONT = "1";
+    public static int currImageFormat = ImageFormat.YUV_420_888;
     public static final String CAMERA_ID_BACK = "0";
+    public static final String CAMERA_ID_FRONT = "1";
 
     private Context context;
     private String mCameraId;
@@ -69,6 +70,9 @@ public class Camera2Helper {
 
     private Size mPreviewSize;
 
+    /**
+     * 旋转角度
+     */
     private int rotateDegree = 0;
 
     private Camera2Helper(Builder builder) {
@@ -79,6 +83,10 @@ public class Camera2Helper {
         rotateDegree = builder.rotateDegree;
         previewViewSize = builder.previewViewSize;
         context = builder.context;
+
+        currImageFormat =  ImageFormat.YV12 ;
+        currImageFormat =  ImageFormat.YUV_420_888 ;
+
     }
 
     public void switchCamera() {
@@ -87,6 +95,7 @@ public class Camera2Helper {
         } else if (CAMERA_ID_FRONT.equals(mCameraId)) {
             specificCameraId = CAMERA_ID_BACK;
         }
+        Log.d(TAG, "switchCamera: specificCameraId ："+specificCameraId);
         stop();
         start();
     }
@@ -198,9 +207,7 @@ public class Camera2Helper {
             // When the session is ready, we start displaying the preview.
             mCaptureSession = cameraCaptureSession;
             try {
-                mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(),
-                        new CameraCaptureSession.CaptureCallback() {
-                        }, mBackgroundHandler);
+                mCaptureSession.setRepeatingRequest(mPreviewRequestBuilder.build(), new CameraCaptureSession.CaptureCallback() {}, mBackgroundHandler);
             } catch (CameraAccessException e) {
                 e.printStackTrace();
             }
@@ -319,19 +326,17 @@ public class Camera2Helper {
     }
 
     private boolean configCameraParams(CameraManager manager, String cameraId) throws CameraAccessException {
-        CameraCharacteristics characteristics
-                = manager.getCameraCharacteristics(cameraId);
+        Log.d(TAG, "configCameraParams: ");
+        CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
 
-        StreamConfigurationMap map = characteristics.get(
-                CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+        StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
         if (map == null) {
             return false;
         }
         mPreviewSize = getBestSupportedSize(new ArrayList<>(Arrays.asList(map.getOutputSizes(SurfaceTexture.class))));
-        mImageReader = ImageReader.newInstance(mPreviewSize.getWidth(), mPreviewSize.getHeight(),
-                ImageFormat.YUV_420_888, 2);
-        mImageReader.setOnImageAvailableListener(
-                new OnImageAvailableListenerImpl(), mBackgroundHandler);
+        mImageReader = ImageReader.newInstance(mPreviewSize.getWidth(), mPreviewSize.getHeight(), currImageFormat, 2);
+        //mImageReader = ImageReader.newInstance(mPreviewSize.getWidth(), mPreviewSize.getHeight(), ImageFormat.YV12, 2);
+        mImageReader.setOnImageAvailableListener(new OnImageAvailableListenerImpl(), mBackgroundHandler);
 
         mSensorOrientation = characteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
         mCameraId = cameraId;
@@ -538,6 +543,9 @@ public class Camera2Helper {
         }
     }
 
+
+
+
     private class OnImageAvailableListenerImpl implements ImageReader.OnImageAvailableListener {
         private byte[] temp = null;
         private byte[] yuvData = null;
@@ -547,7 +555,7 @@ public class Camera2Helper {
         @Override
         public void onImageAvailable(ImageReader reader) {
             Image image = reader.acquireNextImage();
-            if (camera2Listener != null && image.getFormat() == ImageFormat.YUV_420_888) {
+            if (camera2Listener != null && image.getFormat() == currImageFormat) {
                 Image.Plane[] planes = image.getPlanes();
                 lock.lock();
 
@@ -583,6 +591,8 @@ public class Camera2Helper {
                     }
                     offset += len / 4;
                 }
+
+                Log.d(TAG, "onImageAvailable: rotateDegree :"+ rotateDegree);
 
                 if (rotateDegree == 90 || rotateDegree == 180) {
                     if (dstData == null) {

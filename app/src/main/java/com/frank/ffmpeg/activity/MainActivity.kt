@@ -1,17 +1,10 @@
 package com.frank.ffmpeg.activity
 
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.view.View
-import android.widget.TextView
-import androidx.core.content.ContentProviderCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.frank.ffmpeg.FFmpegCmd
-
 import com.frank.ffmpeg.R
 import com.frank.ffmpeg.adapter.WaterfallAdapter
 import com.frank.ffmpeg.listener.OnItemClickListener
@@ -22,48 +15,43 @@ import com.frank.ffmpeg.listener.OnItemClickListener
  */
 class MainActivity : BaseActivity() {
 
-    private val MANAGE_STORAGE_RC: Int = 100
     override val layoutId: Int
         get() = R.layout.activity_main
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        testThreadCount()
+
         initView()
-        getQueryPermission()
     }
 
-    fun getQueryPermission(){
-        fun isRPlus() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
-        if(!isRPlus()) {
-           return
+    private val TAG = "MainActivity ： "
+    private fun testThreadCount() {
+        val tag = "testThreadCount "
+
+        // Process.getThreadGroupCount()
+        var activeCount = Thread.activeCount()
+        println(" $tag activeCount  before :$activeCount")
+
+        val maxThreads = (2.5 * Runtime.getRuntime().availableProcessors()).toInt()
+        var maxThreadsLimit = maxThreads + 20
+        println(" $tag maxThreads :$maxThreads")
+        while (maxThreadsLimit >= 0) {
+            println(" $tag        maxThreadsLimit:$maxThreadsLimit")
+            val thread = Thread(Runnable {
+                Thread.sleep(1000000000)
+            }, "thread : $maxThreads");
+            thread.start()
+            maxThreadsLimit--
         }
-        val packageName = this.packageName
-        try {
-//            "queryPermission".toast(ContentProviderCompat.requireContext())
-            val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
-            intent.addCategory("android.intent.category.DEFAULT")
-            intent.data = Uri.parse("package:$packageName")
-            this.startActivityForResult(intent, MANAGE_STORAGE_RC)
-        } catch (e: Exception) {
-//            "error:".toast(ContentProviderCompat.requireContext())
-            val intent = Intent()
-            intent.action = Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION
-            startActivityForResult(intent, MANAGE_STORAGE_RC)
-        }
+        activeCount = Thread.activeCount()
+        println(" $tag activeCount  end :$activeCount")
+
     }
+
     private fun initView() {
-        val list = listOf(
-                getString(R.string.audio_handle),
-                getString(R.string.video_handle),
-                getString(R.string.media_handle),
-                getString(R.string.video_push),
-                getString(R.string.video_live),
-                getString(R.string.video_filter),
-                getString(R.string.video_preview),
-                getString(R.string.media_probe),
-                getString(R.string.audio_effect),
-                getString(R.string.camera_filter))
+        val list = listOf(getString(R.string.audio_handle), getString(R.string.video_handle), getString(R.string.media_handle), getString(R.string.video_push), getString(R.string.video_live), getString(R.string.video_filter), getString(R.string.video_preview), getString(R.string.media_probe), getString(R.string.audio_effect))
 
         val viewWaterfall: RecyclerView = findViewById(R.id.list_main_item)
         val layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
@@ -76,7 +64,6 @@ class MainActivity : BaseActivity() {
             }
         })
         viewWaterfall.adapter = adapter
-        findViewById<TextView>(R.id.tv_version).text =" Version:"+FFmpegCmd.getInfo()
     }
 
     private fun doClick(pos: Int) {
@@ -100,8 +87,6 @@ class MainActivity : BaseActivity() {
             -> intent.setClass(this@MainActivity, ProbeFormatActivity::class.java)
             8 //audio effect
             -> intent.setClass(this@MainActivity, AudioEffectActivity::class.java)
-            9 //camera filter
-            -> intent.setClass(this@MainActivity, CameraFilterActivity::class.java)
             else -> {
             }
         }

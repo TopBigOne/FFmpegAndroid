@@ -5,6 +5,7 @@
 #include "PushInterface.h"
 
 
+
 void VideoStreamLogCallback(int level, const char *fmt, va_list args) {
     LOGD(__func__)
  //   LOGI(fmt, args)
@@ -17,30 +18,28 @@ VideoStream::VideoStream() : m_frameLen(0),
                              videoCodec(nullptr),
                              pic_in(nullptr),
                              videoCallback(nullptr) {
-    pthread_mutex_init(&mutex, nullptr);
 
     RTMP_LogSetCallback(VideoStreamLogCallback);
 }
 
 VideoStream::~VideoStream() {
-    pthread_mutex_destroy(&mutex);
     if (videoCodec) {
         x264_encoder_close(videoCodec);
         videoCodec = nullptr;
     }
     if (pic_in) {
         x264_picture_clean(pic_in);
-        DELETE(pic_in);
+        delete(pic_in);
     }
 }
 
-void VideoStream::setVideoEncInfo(int width, int height, int fps, int bitrate) {
+int VideoStream::setVideoEncInfo(int width, int height, int fps, int bitrate) {
     LOGD(__FUNCTION__)
     LOGI("  width   : %d", width)
     LOGI("  height  :%d", height)
     LOGI("  fps     : %d", fps)
     LOGI("  bitrate : %d", bitrate)
-    pthread_mutex_lock(&mutex);
+    std::lock_guard<std::mutex> l(m_mutex);
     m_frameLen = width * height;
     if (videoCodec) {
         x264_encoder_close(videoCodec);
@@ -48,7 +47,7 @@ void VideoStream::setVideoEncInfo(int width, int height, int fps, int bitrate) {
     }
     if (pic_in) {
         x264_picture_clean(pic_in);
-        DELETE(pic_in);
+        delete(pic_in);
     }
 
     //setting x264 params
@@ -56,7 +55,8 @@ void VideoStream::setVideoEncInfo(int width, int height, int fps, int bitrate) {
     x264_param_t param;
     // ultrafast" 是预设参数的名称，用于指定编码速度和质量的平衡。在这个例子中，选择了 "ultrafast" 预设，它以非常快的速度进行编码，但可能会牺牲一定的视频质量。
     // "zerolatency" 是另一个预设参数的名称，用于指定编码器的延迟特性。在这个例子中，选择了 "zerolatency" 预设，它追求低延迟的编码，适用于实时视频传输等需要快速响应的场景。
-    x264_param_default_preset(&param, "ultrafast", "zerolatency");
+    int ret =   x264_param_default_preset(&param, "ultrafast", "zerolatency");
+
     param.i_level_idc          = 32;
     //input format
     param.i_csp                = X264_CSP_I420;
@@ -87,21 +87,26 @@ void VideoStream::setVideoEncInfo(int width, int height, int fps, int bitrate) {
     param.b_repeat_headers = 1;
     //thread number
     param.i_threads        = 1;
-
-    x264_param_apply_profile(&param, "baseline");
+    ret = x264_param_apply_profile(&param, "baseline");
+    if (ret < 0) {
+        return ret;
+    }
     //open encoder
     videoCodec = x264_encoder_open(&param);
-    pic_in     = new x264_picture_t;
+    if (!videoCodec) {
+        return -1;
+    }
+    pic_in = new x264_picture_t();
     x264_picture_alloc(pic_in, X264_CSP_I420, width, height);
-    pthread_mutex_unlock(&mutex);
+    return ret;
 }
 
 void VideoStream::setVideoCallback(VideoCallback callback) {
     this->videoCallback = callback;
 }
 
-void VideoStream::encodeVideo(int8_t *data, int8_t camera_type) {
-    pthread_mutex_lock(&mutex);
+void VideoStream::encodeVideo(int8_t *data, int camera_type) {
+    std::lock_guard<std::mutex> l(m_mutex);
 
     if (camera_type == 1) {
         //  // 复制数据到图像的Y分量
@@ -156,7 +161,7 @@ void VideoStream::encodeVideo(int8_t *data, int8_t camera_type) {
             sendFrame(pp_nal[i].i_type, pp_nal[i].p_payload, pp_nal[i].i_payload);
         }
     }
-    pthread_mutex_unlock(&mutex);
+
 }
 
 void VideoStream::sendSpsPps(uint8_t *sps, uint8_t *pps, int sps_len, int pps_len) {
