@@ -98,9 +98,9 @@ HTTP_get(struct HTTP_ctx *http, const char *url, HTTP_read_callback *cb)
   if (strncasecmp(url, "http", 4))
     return HTTPRES_BAD_REQUEST;
 
-  if (url[4] == 's')
+  if (url[4] == 's') // https 不是https
     {
-#ifdef CRYPTO
+#ifdef CRYPTO  // 加密
       ssl = 1;
       port = 443;
       if (!RTMP_TLS_ctx)
