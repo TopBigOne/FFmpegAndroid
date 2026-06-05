@@ -7,6 +7,7 @@
 #ifndef NEXT_DEFINE_H
 #define NEXT_DEFINE_H
 
+#define SECOND_TO_MS 1000000
 #define MAX_DEVIATION 60000
 #define MIN_MIN_FRAMES 2
 #define MAX_QUEUE_SIZE (15 * 1024 * 1024)
