@@ -1,4 +1,7 @@
 #!/bin/bash
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/../my_config.sh"
+cd "$FFSRC"
 make clean
 set -e
 archbit=64
@@ -22,7 +25,7 @@ else
   PLATFORM='aarch64'
   PLATFORM_ARCH='arm64'
   ANDROID='android'
-  OPTIMIZE_CFLAGS="-march=$CPU -mfpu=neon -mfloat-abi=softfp"
+  OPTIMIZE_CFLAGS="-march=$CPU"
 fi
 
 uname=`uname`
@@ -38,7 +41,7 @@ else
   echo "don't support $uname"
 fi
 
-export NDK=/Users/xufulong/Library/Android/sdk/ndk-bundle
+export NDK=$NDK_ROOT
 export TOOL=$NDK/toolchains/llvm/prebuilt/$COMPILE_OS-x86_64
 export TOOLCHAIN=$TOOL/bin
 export SYSROOT=$TOOL/sysroot
@@ -46,12 +49,13 @@ export CROSS_PREFIX=$TOOLCHAIN/$ARCH-linux-$ANDROID-
 export CC=$TOOLCHAIN/$PLATFORM-linux-$ANDROID$API-clang
 export CXX=$TOOLCHAIN/$PLATFORM-linux-$ANDROID$API-clang++
 export PLATFORM_API=$NDK/platforms/android-$API/arch-$PLATFORM_ARCH
-export PREFIX=../ffmpeg-android/$ABI
+export PREFIX=$SO_OUT/$ABI
 
 THIRD_LIB=$PREFIX
 export EXTRA_CFLAGS="-Os -fPIC $OPTIMIZE_CFLAGS -I$THIRD_LIB/include"
 export EXTRA_LDFLAGS="-Wl,-z,max-page-size=16384 -L$THIRD_LIB/lib"
-export PKG_CONFIG_PATH=$EXTRA_LIB/lib/pkgconfig:$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig
+export PKG_CONFIG_LIBDIR=$PREFIX/lib/pkgconfig
 
 function build_one() {
   ./configure \
@@ -63,8 +67,10 @@ function build_one() {
   --cpu=$CPU \
   --cc=$CC \
   --cxx=$CXX \
-  --nm=$TOOLCHAIN/$ARCH-linux-$ANDROID-nm \
-  --strip=$TOOLCHAIN/$ARCH-linux-$ANDROID-strip \
+  --ar=$TOOLCHAIN/llvm-ar \
+  --ranlib=$TOOLCHAIN/llvm-ranlib \
+  --nm=$TOOLCHAIN/llvm-nm \
+  --strip=$TOOLCHAIN/llvm-strip \
   --enable-cross-compile \
   --sysroot=$SYSROOT \
   --enable-hwaccels \
@@ -139,9 +145,10 @@ png_pipe,realtext,rm,rtp,rtsp,sami,sdp,srt,swf,vc1,wav,webm_dash,xmv
 build_one
 
 function link_one_ffmpeg() {
-  $TOOLCHAIN/$ARCH-linux-$ANDROID-ld -rpath-link=$PLATFORM_API/usr/lib -L$PLATFORM_API/usr/lib \
-  -L$PREFIX/lib -soname libffmpeg.so \
-  -shared -Bsymbolic --whole-archive --no-undefined -o $PREFIX/libffmpeg.so \
+  $CC \
+  -shared \
+  -Wl,-soname,libffmpeg.so \
+  -Wl,--whole-archive \
   $PREFIX/lib/libavcodec.a \
   $PREFIX/lib/libavfilter.a \
   $PREFIX/lib/libswresample.a \
@@ -152,7 +159,10 @@ function link_one_ffmpeg() {
   $PREFIX/lib/libx264.a \
   $PREFIX/lib/libssl.a \
   $PREFIX/lib/libcrypto.a \
-  -lc -lm -lz -ldl -llog -landroid -lmediandk --dynamic-linker=/system/bin/linker $TOOL/lib/gcc/$ARCH-linux-$ANDROID/4.9.x/libgcc_real.a
+  -Wl,--no-whole-archive \
+  -Wl,-z,max-page-size=16384 \
+  -lc -lm -lz -ldl -llog -landroid -lmediandk \
+  -o $PREFIX/libffmpeg.so
 }
 
 link_one_ffmpeg

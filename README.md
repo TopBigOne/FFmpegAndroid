@@ -31,3 +31,11 @@ WebRTC设计传输协议有SDP、ICE、NAT、STUN等，常用视频编码协议�
 ### Joining the group to learn FFmpeg:
 ![preview](https://github.com/xufuji456/FFmpegAndroid/blob/master/picture/ffmpeg_group.png)
 
+
+----
+### 编译顺序：
+
+bash shell/openssl/build_openssl.sh 64
+bash shell/mp3lame/build_lame.sh 64
+bash shell/x264/build_x264.sh 64
+bash shell/ffmpeg/build_ffmpeg_one.sh
