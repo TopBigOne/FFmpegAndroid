@@ -461,9 +461,9 @@ int VideoRenderHandler::ConvertPixelFormat(std::unique_ptr<FrameBuffer> &buffer)
 }
 
 void VideoRenderHandler::NotifyListener(int what, int arg1, int arg2) {
-    if (!mNotifyCb)
-        return
-    mNotifyCb(what, arg1, arg2, nullptr, 0);
+    if (mNotifyCb) {
+        mNotifyCb(what, arg1, arg2, nullptr, 0);
+    }
 }
 
 void VideoRenderHandler::SetConfig(const sp<GeneralConfig> &config) {
@@ -589,7 +589,7 @@ void VideoRenderHandler::ExecuteTask() {
                     NEXT_LOGI(TAG,
                               "video late drop frame pts %f, delay %f, duration %f, "
                               "time %f, mFrameTick.time %f\n",
-                            frameBuffer->pts / 1000.0, delay, duration, time, mFrameTick.time);
+                              frameBuffer->pts / 1000.0, delay, duration, time, mFrameTick.time);
                     break;
                 }
             }
