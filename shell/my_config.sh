@@ -4,4 +4,5 @@ export MP3LAME_SRC=/Users/dev/Documents/AV/libmp3lame
 export X264_SRC=/Users/dev/Documents/AV/x264
 export X265_SRC=/Users/dev/Documents/AV/x265
 export openssl_SRC=/Users/dev/Documents/AV/openssl
-export SO_OUT=/Users/dev/Documents/Android_work/W_2/FFmpegAndroid/so_out
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+export SO_OUT="$PROJECT_ROOT/so_out"
