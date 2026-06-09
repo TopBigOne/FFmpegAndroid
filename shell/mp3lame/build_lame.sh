@@ -48,18 +48,24 @@ if [ -n "$AUTOMAKE_LIBDIR" ]; then
   cp "$AUTOMAKE_LIBDIR/config.guess" ./config.guess
 fi
 
+# lame 的 configure.ac 会在内部重写 CFLAGS，用 configure 参数传入的 CFLAGS 会被覆盖。
+# 正确做法是先 export 到环境变量，configure 读取环境变量作为初始值再扩展，-fPIC 才能保留。
+export CFLAGS="-Os -fPIC"
+export LDFLAGS="-Wl,-z,max-page-size=16384"
+
 function build_lame() {
+  # 清除旧的 .o 文件，防止非 -fPIC 的旧目标文件被 make 判断为最新而跳过重编
+  make clean 2>/dev/null
   ./configure \
   --build=aarch64-apple-darwin \
   --host=$ARCH-linux-$ANDROID \
   --prefix=$PREFIX \
   --enable-static \
   --disable-shared \
-  --disable-frontend \
-  LDFLAGS="-Wl,-z,max-page-size=16384"
+  --disable-frontend
   make -j$(getconf _NPROCESSORS_ONLN)
   make install
 }
 
 build_lame
-echo "building mp3lame done, output: $PREFIX"
+echo "✅✅✅build mp3lame done, output: $PREFIX"

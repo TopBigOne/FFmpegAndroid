@@ -94,6 +94,12 @@ function build_x265() {
 
   make -j$(getconf _NPROCESSORS_ONLN)
   make install
+
+  # cmake 交叉编译 bug：生成的 x265.pc 里 Libs.private 包含 -l-l:libunwind.a
+  # （多了一个 -l 前缀），导致 pkg-config --exists x265 返回失败。
+  # 修复：把 Libs.private 改成干净的依赖列表，libunwind 由 -lc++_static 间接覆盖。
+  sed -i '' 's/^Libs.private:.*/Libs.private: -lc++ -lm -ldl/' \
+    "$PREFIX/lib/pkgconfig/x265.pc"
 }
 
 build_x265

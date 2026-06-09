@@ -2,8 +2,6 @@
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 source "$SCRIPT_DIR/../my_config.sh"
 
-make clean 2>/dev/null
-
 archbit=${1:-64}
 
 if [ $archbit -eq 32 ]; then
@@ -38,6 +36,7 @@ export LD=$TOOLCHAIN/bin/ld
 export PREFIX=$SO_OUT/$ABI
 
 cd "$X264_SRC"
+make clean 2>/dev/null
 
 function build_x264() {
   ./configure \
@@ -56,4 +55,4 @@ function build_x264() {
 }
 
 build_x264
-echo "build x264 done, output: $PREFIX"
+echo "✅✅✅build x264 done, output: $PREFIX"
