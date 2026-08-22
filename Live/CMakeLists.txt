@@ -13,6 +13,7 @@ set_target_properties(faac
                        PROPERTIES IMPORTED_LOCATION
                        ../../../../libs/${CMAKE_ANDROID_ARCH_ABI}/libfaac.a)
 
+# ← 方式A：正在生效
 add_subdirectory(src/main/cpp/rtmp)
 #add_library(rtmp
 #             STATIC
