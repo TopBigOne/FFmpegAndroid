@@ -101,6 +101,16 @@ extern "C"
     uint32_t m_nBodySize;
     uint32_t m_nBytesRead;
     RTMPChunk *m_chunk;
+    // 历史原因，这是一个 2009 年的 C 库（librtmp），那个年代的 C 代码习惯用 char * 表示"一段字节缓冲区"，因为：
+    //
+    //  1. uint8_t 是后来 C99 标准才规范化的类型
+    //  2. C 语言里 char * 就是最通用的"字节指针"，早期网络库几乎都这么写
+    //
+    //  ---
+    //  char 和 uint8_t 的实际差别
+    //
+    //  char      →  有符号，范围 -128 ~ 127（取决于平台）
+    //  uint8_t   →  无符号，范围    0 ~ 255   （明确）
     char *m_body;
   } RTMPPacket;
 
